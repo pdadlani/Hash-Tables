@@ -93,8 +93,19 @@ class HashTable:
         """
         # hash the key to find the appropriate index in storage
         index = self.hash_index(key)
-        # set storage at hashed index to None
-        self.storage[index] = None
+        # must set the node, to easily iterate through linked list if collisions
+        node = self.storage[index]
+
+        # if there exists data at this node
+        # loop through all nodes, until you get a key that matches or node is None
+        while node is not None and node.key != key:
+            node = node.next
+        # if there is nothing, return warning
+        if node is None:
+            return 'Warning: key not found'
+        # if key matches, delete the node entirely
+        if node.key == key:
+            self.storage[index] = None
 
 
     def get(self, key):

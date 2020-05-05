@@ -58,8 +58,8 @@ class HashTable:
         # must hash the key to find the appropriate index in storage
         index = self.hash_index(key)
         # set storage at hashed index to the key,value tuple
-        # tuple required for resize method
-        self.storage[index] = (key, value)
+        # refactored using HashTableEntry, a linked list node
+        self.storage[index] = HashTableEntry(key, value)
 
     def delete(self, key):
         """
@@ -87,7 +87,7 @@ class HashTable:
         index = self.hash_index(key)
         # if there exists a value at given index, then return the value of key, value tuple
         if self.storage[index] is not None:
-            return self.storage[index][1]
+            return self.storage[index].value
 
     def resize(self):
         """
@@ -105,10 +105,10 @@ class HashTable:
         for key_val in self.storage:
             # if there exists values at the index
             if key_val is not None:
-                # rehash key with new capacity
-                new_index = self.hash_index(key_val[0])
+                # rehash key with new capacitys
+                new_index = self.hash_index(key_val.key)
                 # store key, value tuple at new hashed index
-                new_storage[new_index] = (key_val[0], key_val[1])
+                new_storage[new_index] = HashTableEntry(key_val.key, key_val.value)
         # return the new storage / set it to self.storage
         self.storage = new_storage
 

@@ -16,6 +16,10 @@ class HashTable:
 
     Implement this.
     """
+    def __init__(self, capacity):
+        self.capacity = capacity
+        # instantiate storage of specified capacity
+        self.storage = [None] * self.capacity 
 
     def fnv1(self, key):
         """
@@ -30,6 +34,10 @@ class HashTable:
 
         Implement this, and/or FNV-1.
         """
+        hash_num = 5381
+        for char in key:
+            hash_num = ((hash_num << 5) + hash_num) + ord(char)
+        return hash_num
 
     def hash_index(self, key):
         """
@@ -47,6 +55,11 @@ class HashTable:
 
         Implement this.
         """
+        # must hash the key to find the appropriate index in storage
+        index = self.hash_index(key)
+        # set storage at hashed index to the key,value tuple
+        # refactored using HashTableEntry, a linked list node
+        self.storage[index] = HashTableEntry(key, value)
 
     def delete(self, key):
         """
@@ -56,6 +69,11 @@ class HashTable:
 
         Implement this.
         """
+        # hash the key to find the appropriate index in storage
+        index = self.hash_index(key)
+        # set storage at hashed index to None
+        self.storage[index] = None
+
 
     def get(self, key):
         """
@@ -65,6 +83,11 @@ class HashTable:
 
         Implement this.
         """
+        # must hash the key to find the appropriate index in storage
+        index = self.hash_index(key)
+        # if there exists a value at given index, then return the value of key, value tuple
+        if self.storage[index] is not None:
+            return self.storage[index].value
 
     def resize(self):
         """
@@ -73,6 +96,22 @@ class HashTable:
 
         Implement this.
         """
+        # double the capacity
+        self.capacity *= 2
+        # create a new temp storage variable
+        new_storage = [None] * self.capacity
+        # rehash / copy all key/value pairs to new storage
+        # iterate through all key, value tuples in the storage
+        for key_val in self.storage:
+            # if there exists values at the index
+            if key_val is not None:
+                # rehash key with new capacitys
+                new_index = self.hash_index(key_val.key)
+                # store key, value tuple at new hashed index
+                new_storage[new_index] = HashTableEntry(key_val.key, key_val.value)
+        # return the new storage / set it to self.storage
+        self.storage = new_storage
+
 
 if __name__ == "__main__":
     ht = HashTable(2)

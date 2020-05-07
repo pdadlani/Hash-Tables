@@ -19,8 +19,9 @@ def slowfun(x, y):
     global fact_dict, mod_dict, ans_dict
 
     # if the x,y pair exists in the dict, return the value
-    if ans_dict.get(str(x) + ',' + str(y)):
-        return ans_dict[str(x) + ',' + str(y)]
+    # if ans_dict.get(str(x) + ',' + str(y)):
+    if ans_dict.get(f'{x},{y}'):
+        return ans_dict[f'{x},{y}']
 
     # otherwise, do the following sets of calculations:
 
@@ -49,7 +50,7 @@ def slowfun(x, y):
         v %= 982451653 
         mod_dict[v] = v
 
-    ans_dict[str(x) + ',' + str(y)] = v
+    ans_dict[f'{x},{y}'] = v
     return v
 
 

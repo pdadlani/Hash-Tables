@@ -18,8 +18,12 @@ class HashTable:
     """
     def __init__(self, capacity):
         self.capacity = capacity
-        # instantiate storage of specified capacity
         self.storage = [None] * self.capacity 
+        self.size = 0
+        self.resizing = False
+
+    def get_load_factor(self):
+        return self.size / self.capacity
 
     def fnv1(self, key):
         """
@@ -55,6 +59,9 @@ class HashTable:
 
         Implement this.
         """
+        if self.get_load_factor() > 0.7:
+            self.resize('p')
+
         # must hash the key to find the appropriate index in storage
         index = self.hash_index(key)
         # print('key', key, 'val', value, 'index', index)
@@ -66,6 +73,7 @@ class HashTable:
         if node is None:
             # set storage at hashed index to the key,value tuple
             self.storage[index] = HashTableEntry(key, value)
+            self.size += 1
             return
         # otherwise
         # if there exists nodes at this index
@@ -82,6 +90,7 @@ class HashTable:
         else:
             # otherwise, create and insert a new HashTableEntry for the last node
             prev.next = HashTableEntry(key, value)
+            self.size += 1
 
 
 
@@ -110,11 +119,13 @@ class HashTable:
         # if key matches, delete the node entirely
         # if node.key == key:
         else:
+            self.size -= 1
             if prev is None:
                 self.storage[index] = node.next
-                # node = node.next
             else:
                 prev.next = node.next
+        if self.get_load_factor() < 0.2:
+            self.resize('d')
 
 
     def get(self, key):
@@ -133,11 +144,9 @@ class HashTable:
         if self.storage[index] is None:
             return None
         # otherwise
-        # prev = node
         # while node is not None and key is not found
         while node is not None and key != node.key:
-            # update next and prev pointers
-            # prev = node
+            # update node pointers
             node = node.next
         # then check if node is None:
         if node is None:
@@ -147,16 +156,19 @@ class HashTable:
         return node.value
         
 
-    def resize(self):
+    def resize(self, dir):
         """
         Doubles the capacity of the hash table and
         rehash all key/value pairs.
 
         Implement this.
         """
-
         # double the capacity
-        self.capacity *= 2
+        if dir == 'p':
+            self.capacity *= 2
+        else:
+            self.capacity = self.capacity // 2
+        self.size = 0
         # variable for old storage
         old_storage = self.storage
         # self.storage equal to a new empty array of size self.capacity

@@ -18,8 +18,12 @@ class HashTable:
     """
     def __init__(self, capacity):
         self.capacity = capacity
-        # instantiate storage of specified capacity
         self.storage = [None] * self.capacity 
+        self.size = 0
+        self.resizing = False
+
+    def get_load_factor(self):
+        return self.size / self.capacity
 
     def fnv1(self, key):
         """
@@ -55,11 +59,40 @@ class HashTable:
 
         Implement this.
         """
+        if self.get_load_factor() > 0.7:
+            self.resize('p')
+
         # must hash the key to find the appropriate index in storage
         index = self.hash_index(key)
-        # set storage at hashed index to the key,value tuple
-        # refactored using HashTableEntry, a linked list node
-        self.storage[index] = HashTableEntry(key, value)
+        # print('key', key, 'val', value, 'index', index)
+
+        # must set the node, to easily iterate through linked list if collisions
+        node = self.storage[index]
+
+        # if there exists no other values at this index
+        if node is None:
+            # set storage at hashed index to the key,value tuple
+            self.storage[index] = HashTableEntry(key, value)
+            self.size += 1
+            return
+        # otherwise
+        # if there exists nodes at this index
+        # iterate through all the nodes, while next is not None and node's key does not equal input key
+        prev = node
+        while node is not None and node.key != key:
+            prev = node
+            node = node.next
+        # if the node's key matches the input key
+        if prev.key == key:
+            # update the node's value
+            prev.value = value
+            return
+        else:
+            # otherwise, create and insert a new HashTableEntry for the last node
+            prev.next = HashTableEntry(key, value)
+            self.size += 1
+
+
 
     def delete(self, key):
         """
@@ -71,8 +104,28 @@ class HashTable:
         """
         # hash the key to find the appropriate index in storage
         index = self.hash_index(key)
-        # set storage at hashed index to None
-        self.storage[index] = None
+        # must set the node, to easily iterate through linked list if collisions
+        node = self.storage[index]
+
+        # if there exists data at this node
+        # loop through all nodes, until you get a key that matches or node is None
+        prev = None
+        while node is not None and node.key != key:
+            prev = node
+            node = node.next
+        # if there is nothing, return warning
+        if node is None:
+            return 'Warning: key not found'
+        # if key matches, delete the node entirely
+        # if node.key == key:
+        else:
+            self.size -= 1
+            if prev is None:
+                self.storage[index] = node.next
+            else:
+                prev.next = node.next
+        if self.get_load_factor() < 0.2:
+            self.resize('d')
 
 
     def get(self, key):
@@ -85,11 +138,25 @@ class HashTable:
         """
         # must hash the key to find the appropriate index in storage
         index = self.hash_index(key)
-        # if there exists a value at given index, then return the value of key, value tuple
-        if self.storage[index] is not None:
-            return self.storage[index].value
+        # must set a node variable, so it's easy to iterate if there is a collision
+        node = self.storage[index]
+        # if there is nothing at given index, then return None
+        if self.storage[index] is None:
+            return None
+        # otherwise
+        # while node is not None and key is not found
+        while node is not None and key != node.key:
+            # update node pointers
+            node = node.next
+        # then check if node is None:
+        if node is None:
+            # return none
+            return None
+        # otherwise, assumes key is found, so return value
+        return node.value
+        
 
-    def resize(self):
+    def resize(self, dir):
         """
         Doubles the capacity of the hash table and
         rehash all key/value pairs.
@@ -97,20 +164,25 @@ class HashTable:
         Implement this.
         """
         # double the capacity
-        self.capacity *= 2
-        # create a new temp storage variable
-        new_storage = [None] * self.capacity
-        # rehash / copy all key/value pairs to new storage
-        # iterate through all key, value tuples in the storage
-        for key_val in self.storage:
-            # if there exists values at the index
-            if key_val is not None:
-                # rehash key with new capacitys
-                new_index = self.hash_index(key_val.key)
-                # store key, value tuple at new hashed index
-                new_storage[new_index] = HashTableEntry(key_val.key, key_val.value)
-        # return the new storage / set it to self.storage
-        self.storage = new_storage
+        if dir == 'p':
+            self.capacity *= 2
+        else:
+            self.capacity = self.capacity // 2
+        self.size = 0
+        # variable for old storage
+        old_storage = self.storage
+        # self.storage equal to a new empty array of size self.capacity
+        self.storage = [None] * self.capacity
+
+        # iterate through each index of array
+        for arr_idx in old_storage:
+            # instantiate the node to be the first element in specified array index
+            node = arr_idx
+            # iterate through each node in specified index, while it is not none
+            while node is not None:
+                # put the key, value of item into *new* storage
+                self.put(node.key, node.value)
+                node = node.next
 
 
 if __name__ == "__main__":

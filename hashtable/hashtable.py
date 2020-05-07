@@ -154,21 +154,23 @@ class HashTable:
 
         Implement this.
         """
+
         # double the capacity
         self.capacity *= 2
-        # create a new temp storage variable
-        new_storage = [None] * self.capacity
-        # rehash / copy all key/value pairs to new storage
-        # iterate through all key, value tuples in the storage
-        for key_val in self.storage:
-            # if there exists values at the index
-            if key_val is not None:
-                # rehash key with new capacitys
-                new_index = self.hash_index(key_val.key)
-                # store key, value tuple at new hashed index
-                new_storage[new_index] = HashTableEntry(key_val.key, key_val.value)
-        # return the new storage / set it to self.storage
-        self.storage = new_storage
+        # variable for old storage
+        old_storage = self.storage
+        # self.storage equal to a new empty array of size self.capacity
+        self.storage = [None] * self.capacity
+
+        # iterate through each index of array
+        for arr_idx in old_storage:
+            # instantiate the node to be the first element in specified array index
+            node = arr_idx
+            # iterate through each node in specified index, while it is not none
+            while node is not None:
+                # put the key, value of item into *new* storage
+                self.put(node.key, node.value)
+                node = node.next
 
 
 if __name__ == "__main__":
